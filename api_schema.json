@@ -1,0 +1,435 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PyKRX API Schema for LLM",
+  "description": "자연어 질문을 API 호출로 매핑하기 위한 스키마",
+  "version": "2.0.0",
+  "base_url": "http://localhost:8000",
+
+  "ticker_dictionary": {
+    "삼성전자": "005930",
+    "sk하이닉스": "000660",
+    "하이닉스": "000660",
+    "lg에너지솔루션": "373220",
+    "삼성바이오로직스": "207940",
+    "삼성바이오": "207940",
+    "현대차": "005380",
+    "현대자동차": "005380",
+    "기아": "000270",
+    "삼성sdi": "006400",
+    "lg화학": "051910",
+    "네이버": "035420",
+    "naver": "035420",
+    "카카오": "035720",
+    "kb금융": "105560",
+    "신한지주": "055550",
+    "신한금융": "055550",
+    "셀트리온": "068270",
+    "포스코퓨처엠": "003670",
+    "현대모비스": "012330",
+    "삼성물산": "028260",
+    "lg전자": "066570",
+    "하나금융지주": "086790",
+    "하나금융": "086790",
+    "sk": "034730",
+    "sk이노베이션": "096770",
+    "고려아연": "010130",
+    "삼성생명": "032830",
+    "lg": "003550",
+    "한국전력": "015760",
+    "한전": "015760",
+    "hmm": "011200",
+    "삼성에스디에스": "018260",
+    "삼성sds": "018260",
+    "kt&g": "033780",
+    "삼성전기": "009150",
+    "두산에너빌리티": "034020",
+    "kt": "030200",
+    "삼성화재": "000810",
+    "sk텔레콤": "017670",
+    "skt": "017670",
+    "s-oil": "010950",
+    "에스오일": "010950",
+    "대한항공": "003490",
+    "삼성중공업": "010140",
+    "포스코인터내셔널": "047050",
+    "아모레퍼시픽": "090430",
+    "에코프로비엠": "247540",
+    "우리금융지주": "316140",
+    "우리금융": "316140",
+    "크래프톤": "259960",
+    "하이브": "352820",
+    "현대제철": "004020",
+    "메리츠금융지주": "138040",
+    "메리츠금융": "138040",
+    "lg생활건강": "051900",
+    "한국타이어": "161390",
+    "카카오페이": "377300",
+    "롯데케미칼": "011170",
+    "한국조선해양": "009540",
+    "gs": "078930",
+    "에코프로": "086520",
+    "hpsp": "403870",
+    "에스엠": "041510",
+    "sm": "041510",
+    "카카오게임즈": "293490",
+    "휴젤": "145020",
+    "솔브레인": "357780",
+    "알테오젠": "196170",
+    "위메이드": "112040",
+    "jyp": "035900",
+    "jyp엔터": "035900",
+    "셀트리온헬스케어": "091990",
+    "펄어비스": "263750"
+  },
+
+  "index_dictionary": {
+    "코스피": "1001",
+    "kospi": "1001",
+    "코스피200": "1028",
+    "kospi200": "1028",
+    "코스피100": "1034",
+    "코스피50": "1035",
+    "코스닥": "2001",
+    "kosdaq": "2001",
+    "코스닥150": "2203",
+    "kosdaq150": "2203"
+  },
+
+  "market_dictionary": {
+    "코스피": "KOSPI",
+    "kospi": "KOSPI",
+    "코스닥": "KOSDAQ",
+    "kosdaq": "KOSDAQ",
+    "코넥스": "KONEX",
+    "konex": "KONEX"
+  },
+
+  "intents": {
+    "server_status": {
+      "keywords": ["서버 상태", "로그인 상태", "api 상태", "사용 가능"],
+      "endpoint": "/api/status",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": []
+    },
+
+    "stock_list": {
+      "keywords": ["종목 목록", "상장 종목", "종목 리스트", "종목 보여줘"],
+      "endpoint": "/api/stocks/list",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true}
+      ]
+    },
+
+    "stock_price": {
+      "keywords": ["주가", "종가", "시세", "ohlcv", "가격", "차트"],
+      "endpoint": "/api/stocks/ohlcv",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "ticker", "type": "string", "required": true, "extract_from": "ticker_dictionary"},
+        {"name": "start", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "end", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "period", "type": "integer", "default": 30}
+      ],
+      "example_queries": [
+        {"query": "삼성전자 주가", "api_call": "/api/stocks/ohlcv?ticker=005930"},
+        {"query": "하이닉스 최근 7일 주가", "api_call": "/api/stocks/ohlcv?ticker=000660&period=7"},
+        {"query": "카카오 1월 주가", "api_call": "/api/stocks/ohlcv?ticker=035720&start=20260101&end=20260131"}
+      ]
+    },
+
+    "market_cap": {
+      "keywords": ["시가총액", "시총", "시총 순위", "시가총액 상위"],
+      "endpoint": "/api/stocks/market-cap",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "top_n", "type": "integer", "default": 50}
+      ],
+      "example_queries": [
+        {"query": "시가총액 상위 10개", "api_call": "/api/stocks/market-cap?top_n=10"},
+        {"query": "코스닥 시총 순위", "api_call": "/api/stocks/market-cap?market=KOSDAQ"},
+        {"query": "시가총액 1위", "api_call": "/api/stocks/market-cap?top_n=1"}
+      ]
+    },
+
+    "fundamental": {
+      "keywords": ["per", "pbr", "배당수익률", "eps", "bps", "밸류에이션", "투자지표"],
+      "endpoint": "/api/stocks/fundamental",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "top_n", "type": "integer", "default": 100}
+      ],
+      "example_queries": [
+        {"query": "코스피 PER 순위", "api_call": "/api/stocks/fundamental?market=KOSPI"},
+        {"query": "PBR 낮은 종목", "api_call": "/api/stocks/fundamental"},
+        {"query": "배당수익률 높은 종목", "api_call": "/api/stocks/fundamental"}
+      ]
+    },
+
+    "all_markets": {
+      "keywords": ["전체 시장", "코스피 코스닥", "시장 현황", "오늘 주식"],
+      "endpoint": "/api/stocks/all-markets",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "top_n", "type": "integer", "default": 50}
+      ]
+    },
+
+    "investor_trading": {
+      "keywords": ["투자자별", "외국인 매매", "기관 매매", "개인 매매", "수급"],
+      "endpoint": "/api/stocks/investor-trading",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"}
+      ]
+    },
+
+    "foreign_holding": {
+      "keywords": ["외국인 보유", "외인 지분", "외국인 비중"],
+      "endpoint": "/api/stocks/foreign-holding",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "top_n", "type": "integer", "default": 50}
+      ]
+    },
+
+    "sector": {
+      "keywords": ["업종", "섹터", "업종별"],
+      "endpoint": "/api/stocks/sector",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true}
+      ]
+    },
+
+    "etf": {
+      "keywords": ["etf", "상장지수펀드"],
+      "endpoint": "/api/etf/all",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "top_n", "type": "integer", "default": 100}
+      ]
+    },
+
+    "etn": {
+      "keywords": ["etn", "상장지수증권"],
+      "endpoint": "/api/etn/all",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "top_n", "type": "integer", "default": 100}
+      ]
+    },
+
+    "short_selling": {
+      "keywords": ["공매도", "공매도 거래", "대차"],
+      "endpoint": "/api/short-selling/trading",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "top_n", "type": "integer", "default": 100}
+      ]
+    },
+
+    "short_balance": {
+      "keywords": ["공매도 잔고", "공매도 잔량"],
+      "endpoint": "/api/short-selling/balance",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "top_n", "type": "integer", "default": 100}
+      ]
+    },
+
+    "credit_trading": {
+      "keywords": ["신용거래", "신용잔고", "신용매수"],
+      "endpoint": "/api/credit/trading",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "top_n", "type": "integer", "default": 100}
+      ]
+    },
+
+    "program_trading": {
+      "keywords": ["프로그램 매매", "차익거래", "비차익거래"],
+      "endpoint": "/api/program/trading",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "top_n", "type": "integer", "default": 100}
+      ]
+    },
+
+    "index_list": {
+      "keywords": ["지수 목록", "지수 종류", "어떤 지수"],
+      "endpoint": "/api/index/list",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "market", "type": "string", "default": "KOSPI", "extract_from": "market_dictionary"},
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true}
+      ]
+    },
+
+    "index_price": {
+      "keywords": ["지수", "코스피 지수", "코스닥 지수", "지수 시세"],
+      "endpoint": "/api/index/ohlcv",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "index_code", "type": "string", "required": true, "extract_from": "index_dictionary"},
+        {"name": "start", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "end", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "period", "type": "integer", "default": 30}
+      ],
+      "example_queries": [
+        {"query": "코스피 지수", "api_call": "/api/index/ohlcv?index_code=1001"},
+        {"query": "코스피200 30일", "api_call": "/api/index/ohlcv?index_code=1028&period=30"}
+      ]
+    },
+
+    "index_components": {
+      "keywords": ["구성종목", "편입종목", "지수 구성"],
+      "endpoint": "/api/index/components",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": [
+        {"name": "index_code", "type": "string", "required": true, "extract_from": "index_dictionary"},
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true}
+      ],
+      "example_queries": [
+        {"query": "코스피200 구성종목", "api_call": "/api/index/components?index_code=1028"},
+        {"query": "코스닥150 편입 종목", "api_call": "/api/index/components?index_code=2203"}
+      ]
+    },
+
+    "futures": {
+      "keywords": ["선물", "선물 시세", "코스피 선물"],
+      "endpoint": "/api/derivatives/futures",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "top_n", "type": "integer", "default": 50}
+      ]
+    },
+
+    "options": {
+      "keywords": ["옵션", "콜옵션", "풋옵션", "옵션 시세"],
+      "endpoint": "/api/derivatives/options",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "top_n", "type": "integer", "default": 50}
+      ]
+    },
+
+    "dividend": {
+      "keywords": ["배당", "배당금", "배당 정보"],
+      "endpoint": "/api/dividend/info",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "ticker", "type": "string", "required": true, "extract_from": "ticker_dictionary"},
+        {"name": "year", "type": "integer", "optional": true}
+      ],
+      "example_queries": [
+        {"query": "삼성전자 배당", "api_call": "/api/dividend/info?ticker=005930"},
+        {"query": "SK하이닉스 2025년 배당", "api_call": "/api/dividend/info?ticker=000660&year=2025"}
+      ]
+    },
+
+    "trading_halt": {
+      "keywords": ["거래정지", "거래 중단"],
+      "endpoint": "/api/special/trading-halt",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "ALL"}
+      ]
+    },
+
+    "admin_issue": {
+      "keywords": ["관리종목", "상장폐지 위험"],
+      "endpoint": "/api/special/admin-issue",
+      "method": "GET",
+      "requires_login": true,
+      "parameters": [
+        {"name": "date", "type": "string", "format": "YYYYMMDD", "optional": true},
+        {"name": "market", "type": "string", "default": "ALL"}
+      ]
+    },
+
+    "bld_list": {
+      "keywords": ["bld 목록", "사용 가능한 api", "엔드포인트 목록"],
+      "endpoint": "/api/krx/bld-list",
+      "method": "GET",
+      "requires_login": false,
+      "parameters": []
+    }
+  },
+
+  "date_patterns": {
+    "오늘": "today",
+    "어제": "yesterday",
+    "이번주": "this_week",
+    "지난주": "last_week",
+    "이번달": "this_month",
+    "지난달": "last_month",
+    "최근 N일": "last_n_days"
+  },
+
+  "number_patterns": {
+    "상위 N개": {"param": "top_n", "regex": "상위\\s*(\\d+)"},
+    "N일": {"param": "period", "regex": "(\\d+)\\s*일"},
+    "N개": {"param": "top_n", "regex": "(\\d+)\\s*개"}
+  },
+
+  "response_analysis_hints": {
+    "stock_price": {
+      "key_fields": ["종가", "등락률", "거래량"],
+      "analysis_suggestions": ["기간 수익률 계산", "변동성 분석", "거래량 트렌드"]
+    },
+    "market_cap": {
+      "key_fields": ["종목명", "시가총액_조", "거래대금"],
+      "analysis_suggestions": ["시총 순위", "거래대금 대비 시총"]
+    },
+    "fundamental": {
+      "key_fields": ["PER", "PBR", "배당수익률"],
+      "analysis_suggestions": ["저PER 종목", "고배당 종목", "PBR 1 미만 종목"]
+    }
+  }
+}
